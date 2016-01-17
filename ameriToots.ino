@@ -1,67 +1,11 @@
-#include <WiFi.h>
-#include <WiFiClient.h>
-#include <WiFiServer.h>
-#include <WiFiUdp.h>
-
-char ssid[]="Mysterious Rice Jawn";
-extern char passwd[];
-int status=WL_IDLE_STATUS;
-WiFiServer server(80);
-
 const int pingPin=2;
 
 void setup() {
   Serial.begin(9600);
-  while (!Serial);
-  if (WiFi.status()==WL_NO_SHIELD) {
-    while (true);
-  }
-  while (status!=WL_CONNECTED) {
-    Serial.print("Attempting to connect to network ");
-    Serial.println(ssid);
-    status=WiFi.begin(ssid, passwd);
-    delay(10000);
-  }
-  Serial.print("Connected. IP address ");
-  Serial.println(WiFi.localIP());
-  server.begin();
-  Serial.println("HTTP server listening on port 80");
 }
 
 void loop() {
-  WiFiClient client=server.available();
-  if (client) {
-    Serial.println("New client");
-    String currentLine="";
-    while (client.connected()) {
-      if (client.available()) {
-        char c=client.read();
-        Serial.write(c);
-        if (c=='\n') {
-          if (currentLine.length()==0) {
-            long vol=execPing(pingPin);
-            client.println("HTTP/1.1 200 OK");
-            client.println("Content-type: text/plain");
-            client.println();
-
-            client.println(vol);
-            client.println();
-
-            Serial.println("\"GET / HTTP/1.1\" 200");
-            break;
-          }
-          else {
-            currentLine="";
-          }
-        }
-        else if (c!='\r') {
-          currentLine+=c;
-        }
-      }
-    }
-    delay(1);
-    client.stop();
-  }
+  execPing(pingPin);
 }
 
 long execPing(const int pin) {
